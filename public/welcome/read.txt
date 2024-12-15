@@ -1,0 +1,1 @@
+you can put a welcom video with ".mp4" format and "so_welcome_new_user" name.

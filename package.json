@@ -1,0 +1,21 @@
+{
+  "name": "advance bot",
+  "version": "2.3.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "dotenv -e .env node ./src/index.js",
+    "dev": "dotenv -e .env nodemon ./src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv-cli": "^7.4.4",
+    "ioredis": "^5.4.1",
+    "nodemon": "^3.1.7",
+    "telegraf": "^4.16.3",
+    "tesseract.js": "^5.1.1"
+  }
+}
