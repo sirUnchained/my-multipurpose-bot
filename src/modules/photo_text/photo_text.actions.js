@@ -46,13 +46,11 @@ const readPicSendText = async (ctx) => {
   fs.unlinkSync(imagePath);
 
   try {
-    const robotMsg = result.data?.text
-      ? result.data.text
-      : "نتونستم تو این تصویر متنی پیدا کنم.";
+    const robotMsg = result.data?.text ? result.data.text : result;
 
     await ctx.replyWithMarkdownV2(`\`${robotMsg}\``);
   } catch (error) {
-    await ctx.reply("نتونستم تو این تصویر متنی پیدا کنم.");
+    await ctx.reply(error.message);
   }
 
   setTimeout(() => {
@@ -102,8 +100,11 @@ const selectPicLang = async (ctx) => {
 
 async function scanPic(imagePath, lang, time) {
   const tesseractPromise = Tesseract.recognize(imagePath, lang);
-  const timerPromise = new Promise((_, reject) => {
-    setTimeout(() => reject("too long."), time);
+  const timerPromise = new Promise((resolve) => {
+    setTimeout(
+      () => resolve("تبدیل بیش از حد طول کشید به خاطر همین پروسه رو لغو کردم."),
+      time
+    );
   });
 
   try {
