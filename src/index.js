@@ -6,18 +6,12 @@ const usersDB = require("./databases/controllers/users.controller");
 const { sendStartMsg } = require("./actions/actions");
 const { sendGptResult } = require("./modules/chat_gpt/chat_gpt.actions");
 const { translateText } = require("./modules/translate/translate.actions");
-const {
-  readPicSendText,
-  selectPicLang,
-} = require("./modules/photo_text/photo_text.actions");
+const { readPicSendText } = require("./modules/photo_text/photo_text.actions");
 const {
   checkMessageAndBAN,
   checkCommandsAndRun,
 } = require("./modules/group_administration/group_administration.actions");
-const {
-  compileCode,
-  sendCompileLangs,
-} = require("./modules/code/code.actions");
+const { compileCode } = require("./modules/code/code.actions");
 // events
 const chatGptEvents = require("./modules/chat_gpt/chat_gpt.events");
 const translateEvents = require("./modules/translate/translate.events");
@@ -29,11 +23,14 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.start(async (ctx) => {
   await sendStartMsg(ctx);
 });
+bot.help(async (ctx) => {
+  await ctx.react("👀");
+});
 
 chatGptEvents(bot);
 translateEvents(bot);
 photoTextEvents(bot);
-codeEvents(bot);
+// codeEvents(bot);
 
 // group administration
 bot.on("new_chat_members", async (ctx) => {

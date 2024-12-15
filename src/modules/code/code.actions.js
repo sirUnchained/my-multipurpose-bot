@@ -50,7 +50,9 @@ async function compilePython(userCode) {
     .replaceAll(/import.*/g, "")
     .replaceAll(/from.*/g, "");
 
-  fs.writeFileSync(codeFile, trustedCode);
+  const preModules = "import copy\nimport random\n";
+
+  fs.writeFileSync(codeFile, preModules + trustedCode);
 
   try {
     const result = child_process.execSync(`python3 ${codeFile}`, {
@@ -71,7 +73,8 @@ async function compileCplusplus(userCode) {
   const codeFile = path.join(__dirname, "temp", "code.cpp");
   const trustedCode = userCode.replaceAll(/#include.*/g, "");
 
-  const neededLibs = "#include<iostream>\n";
+  const neededLibs =
+    "#include<iostream>\n#include<cmath>\n#include<array>\n#include<vector>\n#include<algorithm>\n";
   fs.writeFileSync(codeFile, `${neededLibs + trustedCode}`);
 
   try {
@@ -84,7 +87,10 @@ async function compileCplusplus(userCode) {
     fs.unlinkSync(codeFile);
   } catch (err) {
     fs.unlinkSync(codeFile);
-    return err.stderr?.toString().split("\n").slice(1, 5).join("\n");
+    return (
+      err.stderr?.toString().split("\n").slice(1, 5).join("\n") ||
+      "خطایی ناشناخته در زمان کامپایل رخ داد."
+    );
   }
 
   const compiledFile = path.join(__dirname, "temp", "compiled.exe");
