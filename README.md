@@ -10,8 +10,8 @@
 - picture to text
 - translation using google, microsoft, yandex
 - chat gpt
+- compile cpp, js and python
 
 ## comming soon
-- compile cpp, js and python
 - group administration
 
