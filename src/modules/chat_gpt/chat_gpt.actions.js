@@ -37,9 +37,9 @@ const sendGptResult = async (ctx, chatId, userText) => {
     );
 
     const result = await response.json();
-    console.log(result);
-    const robotMsg = result.result
-      ? result.result[0]
+    const responseResult= result.result;
+    const robotMsg = responseResult
+      ? responseResult[0]
           .replaceAll(/\\/g, "")
           .replace(/\-/g, "\\-")
           .replace(/\_/g, "\\_")
@@ -69,7 +69,7 @@ const sendGptResult = async (ctx, chatId, userText) => {
       }
 
       usersDB.update(chatId, "used_count", user.used_count + 1);
-      insert(chatId, result.result[0], "assistant");
+      insert(chatId, responseResult[0], "assistant");
     } else {
       await ctx.deleteMessage(pleasWaitMsg.message_id);
       await ctx.reply("مشکلی از سمت سرویس پیش امده.");
