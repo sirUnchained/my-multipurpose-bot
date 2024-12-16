@@ -4,6 +4,7 @@ const fs = require("node:fs");
 
 const usersDB = require("./../databases/controllers/users.controller");
 const actionDB = require("./../databases/controllers/actions.controller");
+const messagesDb = require("./../databases/controllers/messages.controller");
 
 const sendStartMsg = async (ctx) => {
   const chatId = ctx.chat.id;
@@ -36,6 +37,7 @@ const sendStartMsg = async (ctx) => {
 
   usersDB.create(chatId, ctx.update.message?.from.first_name);
   actionDB.create(chatId);
+  messagesDb.create(chatId);
 
   const welcomVidPath = path.join(
     __dirname,

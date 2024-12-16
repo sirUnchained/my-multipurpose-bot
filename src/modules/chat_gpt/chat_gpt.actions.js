@@ -1,6 +1,7 @@
 const usersDB = require("./../../databases/controllers/users.controller");
 const actionDB = require("./../../databases/controllers/actions.controller");
 const { Markup } = require("telegraf");
+const { insert } = require("../../databases/controllers/messages.controller");
 
 const waitList = new Set();
 const maxFreeUser = 20;
@@ -21,6 +22,8 @@ const sendGptResult = async (ctx, chatId, userText) => {
   if (actions?.gpt) {
     const pleasWaitMsg = await ctx.reply("لطفا کمی صبر کنید ...");
 
+    const chat = insert(chatId, userText, "user");
+
     const response = await fetch(
       `https://api.one-api.ir/chatbot/v1/${actions.gpt}`,
       {
@@ -29,18 +32,15 @@ const sendGptResult = async (ctx, chatId, userText) => {
           "content-type": "application/json",
           "one-api-token": process.env.API_TOKEN,
         },
-        body: JSON.stringify([
-          {
-            role: "user",
-            content: userText,
-          },
-        ]),
+        body: JSON.stringify(chat.messages),
       }
     );
 
     const result = await response.json();
+    console.log(result);
     const robotMsg = result.result
       ? result.result[0]
+          .replaceAll(/\\/g, "")
           .replace(/\-/g, "\\-")
           .replace(/\_/g, "\\_")
           .replace(/\[/g, "\\[")
@@ -69,6 +69,7 @@ const sendGptResult = async (ctx, chatId, userText) => {
       }
 
       usersDB.update(chatId, "used_count", user.used_count + 1);
+      insert(chatId, result.result[0], "assistant");
     } else {
       await ctx.deleteMessage(pleasWaitMsg.message_id);
       await ctx.reply("مشکلی از سمت سرویس پیش امده.");
