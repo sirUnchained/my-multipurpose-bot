@@ -7,10 +7,10 @@
 
 ## Features
 
-- picture to text
-- translation using google, microsoft, yandex
-- chat gpt
-- compile cpp, js and python
+- picture to text.
+- translation using google, microsoft, yandex.
+- chat gpt.
+- <del>compile cpp, js and python.</del> this feature is currently dangerous, DON'T USE IT until i fix some problems.
 
 ## comming soon
 - group administration
