@@ -41,19 +41,23 @@ const readPicSendText = async (ctx) => {
   );
   fs.writeFileSync(imagePath, response.data);
 
-  // const result = await scanPic(imagePath, actions.pic_lang, 15000);
+  const waitMsg = await ctx.reply(
+    "خب تا زمان پایان پردازش عکس لطفا پیام ندهید."
+  );
+  await ctx.deleteMessage(waitMsg.message_id);
 
   const result = await Tesseract.recognize(imagePath, actions.pic_lang);
 
   fs.unlinkSync(imagePath);
 
   try {
-    // const robotMsg = result.data?.text ? result.data.text : result;
     const robotMsg = result.data?.text
       ? result.data.text
       : "تبدیل بیش از حد طول کشید به خاطر همین پروسه رو لغو کردم.";
 
-    await ctx.replyWithMarkdownV2(`\`${robotMsg}\``);
+    for (let i = 0; i < robotMsg.length; i += 4090) {
+      await ctx.replyWithMarkdownV2(`\`${robotMsg.slice(i, i + 4090)}\``);
+    }
   } catch (error) {
     await ctx.reply(error.message);
   }
@@ -102,23 +106,5 @@ const selectPicLang = async (ctx) => {
     );
   }
 };
-// ! this function has some problems, i'll remove it.
-async function scanPic(imagePath, lang, time) {
-  const tesseractPromise = Tesseract.recognize(imagePath, lang);
-  const timerPromise = new Promise((resolve, reject) => {
-    setTimeout(
-      () => resolve("تبدیل بیش از حد طول کشید به خاطر همین پروسه رو لغو کردم."),
-      time
-    );
-  });
-
-  try {
-    const result = await Promise.race([tesseractPromise, timerPromise]);
-    return result;
-  } catch (error) {
-    const result = error.message;
-    return result;
-  }
-}
 
 module.exports = { readPicSendText, selectPicLang };
