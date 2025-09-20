@@ -11,6 +11,7 @@ class DatabaseManager:
         if cls._conn is None:
             cls._conn = sqlite3.connect("./database/datas/real.db")
             cls._conn.row_factory = sqlite3.Row
+            cls._conn.execute("PRAGMA foreign_keys = ON")
         return cls._conn
 
     @classmethod
