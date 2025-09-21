@@ -1,4 +1,4 @@
-import database.controllers as controllers
+from src.database.database_migrate import create_tables
 
 
 def main():

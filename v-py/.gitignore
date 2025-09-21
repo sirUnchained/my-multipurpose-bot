@@ -1,2 +1,4 @@
 __pycache__
 real.db
+.env
+database_migrate.py
