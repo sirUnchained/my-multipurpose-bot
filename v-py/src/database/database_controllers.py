@@ -5,6 +5,93 @@ from typing import Optional, Any, Dict
 from database_initializer import DatabaseManager
 
 
+class Actions_db_controller:
+    def __init__(self, action_data: Dict[str, Any]) -> None:
+        if action_data:
+            self.id = action_data.get("id")
+            self.chatbot = action_data.get("chatbot")
+            self.voice_lang = action_data.get("voice_lang")
+            self.translations_id = action_data.get("translations_id")
+        else:
+            self.id = None
+            self.chatbot = None
+            self.voice_lang = None
+            self.translations_id = None
+
+    @classmethod
+    def create_action(cls):
+        try:
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+
+                cursor.execute("INSERT INTO translations")
+                translations_id = cursor.lastrowid
+                db.commit()
+
+                cursor.execute(
+                    "INSERT INTO actions (translations_id) VALUES (?)",
+                    (translations_id,),
+                )
+                db.commit()
+        except Exception as e:
+            print(f"user not found: {e}")
+            return None
+
+    @classmethod
+    def find_single_action(cls, action_id: int):
+        try:
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+
+                cursor.execute("SELECT * FROM actions WHERE id = ?", (action_id,))
+                action = cursor.fetchone()
+
+                if action:
+                    return cls(dict(action))
+        except Exception as e:
+            print(f"user not found: {e}")
+            return None
+
+    @classmethod
+    def update_action(cls, action_id: int, key: str, value: Any):
+        try:
+            if key == "translations":
+                cls._update_translation(value)
+                return
+
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+                query = f"UPDATE translations SET {key} = ? WHERE id = ?"
+
+                cursor.execute(query, (value, action_id))
+
+                db.commit()
+        except Exception as e:
+            print(f"user not found: {e}")
+            return None
+
+    @classmethod
+    def _update_translation(cls, translations: dict[str, str]):
+        try:
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+                query = "UPDATE translations SET source = ?, target = ?, engine = ? WHERE id = ?"
+
+                cursor.execute(
+                    query,
+                    (
+                        translations.get("source"),
+                        translations.get("target"),
+                        translations.get("engine"),
+                    ),
+                )
+
+                db.commit()
+        except Exception as e:
+            print(f"user not found: {e}")
+            return None
+
+
 class Users_db_controller:
     def __init__(self, user_data: Dict[str, Any]) -> None:
         if user_data:
@@ -14,6 +101,7 @@ class Users_db_controller:
             self.role = user_data.get("role")
             self.is_banned = user_data.get("is_banned")
             self.created_at = user_data.get("created_at")
+            self.actions_id = user_data.get("actions_id")
         else:
             self.id = None
             self.chat_id = None
@@ -21,6 +109,7 @@ class Users_db_controller:
             self.role = None
             self.is_banned = None
             self.created_at = None
+            self.actions_id = None
 
     @classmethod
     def update_user(cls, chat_id: str, username: str):
@@ -72,9 +161,7 @@ class Users_db_controller:
 
     @classmethod
     def create_user(
-        cls,
-        chatid: str,
-        username: str,
+        cls, chatid: str, username: str, actions_id: int
     ) -> Optional["Users_db_controller"]:
         """say hello to new user"""
         try:
@@ -87,10 +174,10 @@ class Users_db_controller:
 
                 cursor.execute(
                     """
-                    INSERT INTO users (username, chat_id, username, role, created_at)
+                    INSERT INTO users (username, chat_id, username, role, created_at, actions_id)
                     VALUES (?, ?, ?, ?, ?)
                     """,
-                    (username, chatid, username, role, ceratedAt),
+                    (username, chatid, username, role, ceratedAt, actions_id),
                 )
 
                 # getting created user
@@ -109,7 +196,5 @@ class Users_db_controller:
             return None
 
 
-# class
-
 if __name__ == "__main__":
-    print(Users_db_controller.find_single_user("76767"))
+    # print(Users_db_controller.create_user("76767", "bob"))

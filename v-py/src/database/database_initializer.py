@@ -2,7 +2,24 @@ import sqlite3
 from typing import Optional
 
 
-tables = [
+_tables = [
+    """
+            CREATE TABLE IF NOT EXISTS translations (
+                    id          INTEGER                                                     PRIMARY KEY AUTOINCREMENT,
+                    source      TEXT CHECK( source IN ('fa', 'en', 'de', 'tr', 'ru') )      NOT NULL DEFAULT 'fa',
+                    target      TEXT CHECK( target IN ('fa', 'en', 'de', 'tr', 'ru') )      NOT NULL DEFAULT 'en',
+                    engine      TEXT CHECK( engine IN ('google', 'microsoft', 'yandex') )   NOT NULL DEFAULT 'google'
+            );
+    """,
+    """
+            CREATE TABLE IF NOT EXISTS actions (
+                    id              INTEGER                                                     PRIMARY KEY AUTOINCREMENT,
+                    chatbot         varchar(128)                                                NOT NULL DEFAULT 'gpt-4',
+                    voice_lang      TEXT CHECK( target IN ('fa', 'en', 'de', 'tr', 'ru') )      NOT NULL DEFAULT 'en',
+                    translations_id INTEGER                                                     NOT NULL,
+                    FOREIGN KEY     (translations_id) REFERENCES translations (id) ON DELETE CASCADE
+            );
+    """,
     """
             CREATE TABLE IF NOT EXISTS users (
                     id          INTEGER                                   PRIMARY KEY AUTOINCREMENT,
@@ -10,17 +27,11 @@ tables = [
                     username    varchar(255),
                     role        TEXT CHECK( role IN ('ADMIN', 'USER') )   NOT NULL DEFAULT 'USER',
                     is_banned   BOOL                                      DEFAULT FALSE,
-                    created_at  DATETIME                                  DEFAULT CURRENT_TIMESTAMP
-            );
-        """,
-    """
-            CREATE TABLE IF NOT EXISTS actions (
-                    id          INTEGER                                   PRIMARY KEY AUTOINCREMENT,
                     created_at  DATETIME                                  DEFAULT CURRENT_TIMESTAMP,
-                    user_id     INTEGER                                   NOT NULL,
-                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+                    actions_id  INTEGER                                   NOT NULL,
+                    FOREIGN KEY (actions_id) REFERENCES actions (id) ON DELETE CASCADE
             );
-        """,
+    """,
 ]
 
 
@@ -33,7 +44,7 @@ class DatabaseManager:
             print("database is not connnected yet.")
         else:
             cur = cls._conn.cursor()
-            for query in tables:
+            for query in _tables:
                 cur.execute(query)
 
     @classmethod
