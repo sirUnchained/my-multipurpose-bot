@@ -24,7 +24,7 @@ class Actions_db_controller:
             with DatabaseManager.get_connection() as db:
                 cursor = db.cursor()
 
-                cursor.execute("INSERT INTO translations")
+                cursor.execute("INSERT INTO translations (source) VALUES ('fa')")
                 translations_id = cursor.lastrowid
                 db.commit()
 
@@ -33,8 +33,17 @@ class Actions_db_controller:
                     (translations_id,),
                 )
                 db.commit()
+
+                # getting created action
+                cursor.execute(
+                    "SELECT * FROM actions WHERE id = ?", (cursor.lastrowid,)
+                )
+                actions = cursor.fetchone()
+
+                if actions:
+                    return cls(dict(actions))
         except Exception as e:
-            print(f"user not found: {e}")
+            print(f"error in creating action: {e}")
             return None
 
     @classmethod
@@ -49,14 +58,14 @@ class Actions_db_controller:
                 if action:
                     return cls(dict(action))
         except Exception as e:
-            print(f"user not found: {e}")
+            print(f"error in finding action: {e}")
             return None
 
     @classmethod
     def update_action(cls, action_id: int, key: str, value: Any):
         try:
             if key == "translations":
-                cls._update_translation(value)
+                cls._update_translation(action_id, value)
                 return
 
             with DatabaseManager.get_connection() as db:
@@ -67,11 +76,11 @@ class Actions_db_controller:
 
                 db.commit()
         except Exception as e:
-            print(f"user not found: {e}")
+            print(f"error in updating action: {e}")
             return None
 
     @classmethod
-    def _update_translation(cls, translations: dict[str, str]):
+    def _update_translation(cls, action_id: int, translations: dict[str, str]):
         try:
             with DatabaseManager.get_connection() as db:
                 cursor = db.cursor()
@@ -83,12 +92,13 @@ class Actions_db_controller:
                         translations.get("source"),
                         translations.get("target"),
                         translations.get("engine"),
+                        action_id,
                     ),
                 )
 
                 db.commit()
         except Exception as e:
-            print(f"user not found: {e}")
+            print(f"error in updating translation: {e}")
             return None
 
 
@@ -160,9 +170,7 @@ class Users_db_controller:
             print(f"Error changing user ban status: {e}")
 
     @classmethod
-    def create_user(
-        cls, chatid: str, username: str, actions_id: int
-    ) -> Optional["Users_db_controller"]:
+    def create_user(cls, chatid: str, username: str) -> Optional["Users_db_controller"]:
         """say hello to new user"""
         try:
             with DatabaseManager.get_connection() as db:
@@ -172,10 +180,17 @@ class Users_db_controller:
                 role = "ADMIN" if (users_count == None) else "USER"
                 ceratedAt = datetime.datetime.now()
 
+                actions = Actions_db_controller.create_action()
+                actions_id = actions.id if actions is not None else -1
+
+                if actions_id == -1:
+                    print(f"error, action not exists for user {username}")
+                    return
+
                 cursor.execute(
                     """
                     INSERT INTO users (username, chat_id, username, role, created_at, actions_id)
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     """,
                     (username, chatid, username, role, ceratedAt, actions_id),
                 )
@@ -197,4 +212,11 @@ class Users_db_controller:
 
 
 if __name__ == "__main__":
-    # print(Users_db_controller.create_user("76767", "bob"))
+    # print(Users_db_controller.create_user("6565", "jon"))
+    # print(
+    #     Actions_db_controller.update_action(
+    #         1, "translations", {"source": "de", "target": "tr", "engine": "yandex"}
+    #     )
+    # )
+    # print(Actions_db_controller.find_single_action(1))
+    print("hiii")

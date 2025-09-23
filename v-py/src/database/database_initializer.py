@@ -15,7 +15,7 @@ _tables = [
             CREATE TABLE IF NOT EXISTS actions (
                     id              INTEGER                                                     PRIMARY KEY AUTOINCREMENT,
                     chatbot         varchar(128)                                                NOT NULL DEFAULT 'gpt-4',
-                    voice_lang      TEXT CHECK( target IN ('fa', 'en', 'de', 'tr', 'ru') )      NOT NULL DEFAULT 'en',
+                    voice_lang      TEXT CHECK( voice_lang IN ('fa', 'en', 'de', 'tr', 'ru') )      NOT NULL DEFAULT 'en',
                     translations_id INTEGER                                                     NOT NULL,
                     FOREIGN KEY     (translations_id) REFERENCES translations (id) ON DELETE CASCADE
             );
@@ -50,7 +50,7 @@ class DatabaseManager:
     @classmethod
     def get_connection(cls) -> sqlite3.Connection:
         if cls._conn is None:
-            cls._conn = sqlite3.connect("./src/database/datas/real.db")
+            cls._conn = sqlite3.connect("./datas/real.db")
             cls._conn.row_factory = sqlite3.Row
             cls._conn.execute("PRAGMA foreign_keys = ON")
             cls._migrate_tables()
