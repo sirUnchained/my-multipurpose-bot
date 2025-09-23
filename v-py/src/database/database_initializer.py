@@ -1,6 +1,8 @@
 import sqlite3
 from typing import Optional
 
+# from utils.logger import Logger
+from ..utils.logger import Logger
 
 _tables = [
     """
@@ -41,11 +43,12 @@ class DatabaseManager:
     @classmethod
     def _migrate_tables(cls):
         if cls._conn == None:
-            print("database is not connnected yet.")
+            Logger.error_log("database is not connnected yet, so we cannot migrate.")
         else:
             cur = cls._conn.cursor()
             for query in _tables:
                 cur.execute(query)
+            Logger.info_log("migrate finished.")
 
     @classmethod
     def get_connection(cls) -> sqlite3.Connection:
@@ -54,6 +57,7 @@ class DatabaseManager:
             cls._conn.row_factory = sqlite3.Row
             cls._conn.execute("PRAGMA foreign_keys = ON")
             cls._migrate_tables()
+        Logger.debug_log("one call for getting database _conn.")
         return cls._conn
 
     @classmethod
@@ -61,6 +65,7 @@ class DatabaseManager:
         if cls._conn:
             cls._conn.close()
             cls._conn = None
+            Logger.info_log("database __conn closed.")
 
 
 if __name__ == "__main__":
