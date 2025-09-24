@@ -14,3 +14,11 @@
 [2025-09-24 08:54:32] [INFO] migrate started.
 [2025-09-24 08:54:32] [INFO] migrate finished.
 [2025-09-24 08:54:32] [DEBUG] one call for getting database _conn.
+[2025-09-24 10:33:18] [WARNING] database _conn is null, so we try to init dataase.
+[2025-09-24 10:33:18] [DEBUG] migrate started.
+[2025-09-24 10:33:18] [DEBUG] migrate finished.
+[2025-09-24 10:33:18] [INFO] one call for getting database _conn.
+[2025-09-24 10:34:04] [WARNING] database _conn is null, so we try to init dataase.
+[2025-09-24 10:34:04] [DEBUG] migrate started.
+[2025-09-24 10:34:04] [DEBUG] migrate finished.
+[2025-09-24 10:34:04] [INFO] one call for getting database _conn.

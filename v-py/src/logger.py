@@ -10,7 +10,7 @@ class Logger:
         ok i need to check my logs stay in 1000 line limit
         """
         if not os.path.exists(LOGS_PATH):
-            return
+            return LOGS_PATH
 
         try:
             # Count lines in current file

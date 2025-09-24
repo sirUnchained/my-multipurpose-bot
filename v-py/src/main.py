@@ -1,8 +1,8 @@
-from database import DatabaseManager
+from configs import ENV_varables
 
 
 def main():
-    DatabaseManager.get_connection()
+    ENV_varables.load_env()
 
 
 main()
