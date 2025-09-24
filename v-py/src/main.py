@@ -1,5 +1,8 @@
+from database import DatabaseManager
+
+
 def main():
-    print("let the game begin!!")
+    DatabaseManager.get_connection()
 
 
 main()

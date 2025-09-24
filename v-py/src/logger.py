@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from global_var import logs_file_name, maximum_logs_lines, DEBUG
+from configs import LOGS_PATH, LOGS_MAX_LINE, DEBUG
 
 
 class Logger:
@@ -9,21 +9,21 @@ class Logger:
         """
         ok i need to check my logs stay in 1000 line limit
         """
-        if not os.path.exists(logs_file_name):
+        if not os.path.exists(LOGS_PATH):
             return
 
         try:
             # Count lines in current file
-            with open(logs_file_name, "r") as f:
+            with open(LOGS_PATH, "r") as f:
                 lines = f.readlines()
 
             # if file exceeds max lines, remove oldest lines
-            if len(lines) >= maximum_logs_lines:
+            if len(lines) >= LOGS_MAX_LINE:
                 # Keep only the most recent lines
-                lines_to_keep = lines[-(maximum_logs_lines - 1) :]
+                lines_to_keep = lines[-(LOGS_MAX_LINE - 1) :]
 
                 # write new lines
-                with open(logs_file_name, "w") as f:
+                with open(LOGS_PATH, "w") as f:
                     f.writelines(lines_to_keep)
 
         except Exception as e:
@@ -41,7 +41,7 @@ class Logger:
         log_entry = f"[{timestamp}] [{level}] {message}\n"
 
         try:
-            with open(logs_file_name, "a") as f:
+            with open(LOGS_PATH, "a") as f:
                 f.write(log_entry)
         except Exception as e:
             print(f"Error writing to log file: {e}")
@@ -64,10 +64,10 @@ class Logger:
 
     @classmethod
     def get_log_count(cls):
-        if not os.path.exists(logs_file_name):
+        if not os.path.exists(LOGS_PATH):
             return 0
         try:
-            with open(logs_file_name, "r") as f:
+            with open(LOGS_PATH, "r") as f:
                 return sum(1 for _ in f)
         except:
             return 0
@@ -79,7 +79,3 @@ if __name__ == "__main__":
     Logger.warning_log("Low disk space")
     Logger.error_log("Failed to connect to database")
     Logger.info_log("User logged in")
-
-    Logger.info_log("This message should create a new file")
-
-    print(f"Current log count: {Logger.get_log_count()}")

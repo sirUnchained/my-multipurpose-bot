@@ -1,0 +1,16 @@
+[2025-09-24 08:47:17] [INFO] database dose not exist or may not initialized, try to init dataase.
+[2025-09-24 08:47:17] [INFO] migrate started.
+[2025-09-24 08:47:17] [INFO] migrate finished.
+[2025-09-24 08:47:17] [DEBUG] one call for getting database _conn.
+[2025-09-24 08:54:22] [INFO] database dose not exist or may not initialized, try to init dataase.
+[2025-09-24 08:54:22] [INFO] migrate started.
+[2025-09-24 08:54:22] [INFO] migrate finished.
+[2025-09-24 08:54:22] [DEBUG] one call for getting database _conn.
+[2025-09-24 08:54:28] [INFO] database dose not exist or may not initialized, try to init dataase.
+[2025-09-24 08:54:28] [INFO] migrate started.
+[2025-09-24 08:54:28] [INFO] migrate finished.
+[2025-09-24 08:54:28] [DEBUG] one call for getting database _conn.
+[2025-09-24 08:54:32] [INFO] database dose not exist or may not initialized, try to init dataase.
+[2025-09-24 08:54:32] [INFO] migrate started.
+[2025-09-24 08:54:32] [INFO] migrate finished.
+[2025-09-24 08:54:32] [DEBUG] one call for getting database _conn.

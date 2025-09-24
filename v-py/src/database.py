@@ -1,8 +1,41 @@
-import sqlite3
 import datetime
 from typing import Optional, Any, Dict
+import sqlite3
+from logger import Logger
+from configs import tables
 
-from database_initializer import DatabaseManager
+
+class DatabaseManager:
+    _conn: Optional[sqlite3.Connection] = None
+
+    @classmethod
+    def _migrate_tables(cls):
+        if cls._conn == None:
+            Logger.error_log("database is not connnected yet, so we cannot migrate.")
+        else:
+            cur = cls._conn.cursor()
+            Logger.debug_log("migrate started.")
+            for query in tables:
+                cur.execute(query)
+            Logger.debug_log("migrate finished.")
+
+    @classmethod
+    def get_connection(cls) -> sqlite3.Connection:
+        if cls._conn is None:
+            Logger.warning_log("database _conn is null, so we try to init dataase.")
+            cls._conn = sqlite3.connect("./src/db_file/main.db")
+            cls._conn.row_factory = sqlite3.Row
+            cls._conn.execute("PRAGMA foreign_keys = ON")
+            cls._migrate_tables()
+        Logger.info_log("one call for getting database _conn.")
+        return cls._conn
+
+    @classmethod
+    def close_connection(cls):
+        if cls._conn:
+            cls._conn.close()
+            cls._conn = None
+            Logger.info_log("database __conn closed.")
 
 
 class Actions_db_controller:
@@ -43,7 +76,7 @@ class Actions_db_controller:
                 if actions:
                     return cls(dict(actions))
         except Exception as e:
-            print(f"error in creating action: {e}")
+            Logger.error_log(f"error in creating action: {e}")
             return None
 
     @classmethod
@@ -58,7 +91,7 @@ class Actions_db_controller:
                 if action:
                     return cls(dict(action))
         except Exception as e:
-            print(f"error in finding action: {e}")
+            Logger.error_log(f"error in finding action: {e}")
             return None
 
     @classmethod
@@ -76,7 +109,7 @@ class Actions_db_controller:
 
                 db.commit()
         except Exception as e:
-            print(f"error in updating action: {e}")
+            Logger.error_log(f"error in updating action: {e}")
             return None
 
     @classmethod
@@ -98,7 +131,7 @@ class Actions_db_controller:
 
                 db.commit()
         except Exception as e:
-            print(f"error in updating translation: {e}")
+            Logger.error_log(f"error in updating translation: {e}")
             return None
 
 
@@ -137,7 +170,7 @@ class Users_db_controller:
                 db.commit()
 
         except Exception as e:
-            print(f"error in updating username: {e}")
+            Logger.error_log(f"error in updating username: {e}")
 
     @classmethod
     def find_single_user(cls, chat_id: str) -> Optional["Users_db_controller"]:
@@ -150,7 +183,7 @@ class Users_db_controller:
                 return cls(dict(user))
 
         except Exception as e:
-            print(f"user not found: {e}")
+            Logger.error_log(f"user not found: {e}")
             return None
 
     @classmethod
@@ -167,7 +200,8 @@ class Users_db_controller:
                 )
                 db.commit()
         except Exception as e:
-            print(f"Error changing user ban status: {e}")
+            Logger.error_log(f"Error changing user ban status: {e}")
+            return None
 
     @classmethod
     def create_user(cls, chatid: str, username: str) -> Optional["Users_db_controller"]:
@@ -175,7 +209,6 @@ class Users_db_controller:
         try:
             with DatabaseManager.get_connection() as db:
                 cursor = db.cursor()
-
                 users_count = cursor.lastrowid
                 role = "ADMIN" if (users_count == None) else "USER"
                 ceratedAt = datetime.datetime.now()
@@ -184,7 +217,7 @@ class Users_db_controller:
                 actions_id = actions.id if actions is not None else -1
 
                 if actions_id == -1:
-                    print(f"error, action not exists for user {username}")
+                    Logger.error_log(f"error, action not exists for user {username}")
                     return
 
                 cursor.execute(
@@ -198,25 +231,21 @@ class Users_db_controller:
                 # getting created user
                 cursor.execute("SELECT * FROM users WHERE id = ?", (cursor.lastrowid,))
                 user = cursor.fetchone()
-
                 db.commit()
 
                 if user:
                     return cls(dict(user))
         except sqlite3.IntegrityError:
-            print("user already exist")
+            Logger.warning_log(f"user with username '{username}' already exist")
             return None
         except Exception as e:
-            print(f"Error creating user: {e}")
+            Logger.error_log(f"Error creating user: {e}")
             return None
 
 
 if __name__ == "__main__":
-    # print(Users_db_controller.create_user("6565", "jon"))
-    # print(
-    #     Actions_db_controller.update_action(
-    #         1, "translations", {"source": "de", "target": "tr", "engine": "yandex"}
-    #     )
-    # )
-    # print(Actions_db_controller.find_single_action(1))
-    print("hiii")
+    with DatabaseManager.get_connection() as db:
+        cursor = db.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
+        print(result)

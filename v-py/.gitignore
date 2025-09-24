@@ -1,5 +1,5 @@
 __pycache__
-real.db
+main.db
 .env
-database_migrate.py
 logs.log
+.gitignore
