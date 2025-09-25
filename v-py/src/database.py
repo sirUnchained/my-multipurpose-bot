@@ -13,12 +13,20 @@ _tables = [
             );
     """,
     """
+            CREATE TABLE IF NOT EXISTS ais (
+                    id          INTEGER                                                     PRIMARY KEY AUTOINCREMENT,
+                    model       TEXT CHECK( model IN ('gpt-4') )                            NOT NULL DEFAULT 'gpt-4',
+                    use_count   INTEGER                                                     DEFAULT 0
+            );
+    """,
+    """
             CREATE TABLE IF NOT EXISTS actions (
                     id              INTEGER                                                     PRIMARY KEY AUTOINCREMENT,
-                    chatbot         varchar(128)                                                NOT NULL DEFAULT 'gpt-4',
-                    voice_lang      TEXT CHECK( voice_lang IN ('fa', 'en', 'de', 'tr', 'ru') )      NOT NULL DEFAULT 'en',
+                    voice_lang      TEXT CHECK( voice_lang IN ('fa', 'en', 'de', 'tr', 'ru') )  NOT NULL DEFAULT 'en',
                     translations_id INTEGER                                                     NOT NULL,
-                    FOREIGN KEY     (translations_id) REFERENCES translations (id) ON DELETE CASCADE
+                    ais_id          INTEGER                                                     NOT NULL,
+                    FOREIGN KEY (translations_id) REFERENCES translations (id) ON DELETE CASCADE
+                    FOREIGN KEY (ais_id) REFERENCES ais (id) ON DELETE CASCADE
             );
     """,
     """
@@ -160,6 +168,30 @@ class Actions_db_controller:
                     ),
                 )
 
+                db.commit()
+        except Exception as e:
+            Logger.error_log(f"error in updating translation: {e}")
+            return None
+
+    @classmethod
+    def increase_gpt_use(cls, ai_id: int):
+        try:
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+                query = "UPDATE translations SET source = ?, target = ?, engine = ? WHERE id = ?"
+
+                cursor.execute("SELECT * FROM ais WHERE id = ?", (ai_id,))
+                ai = cursor.fetchone()
+                if ai is None:
+                    Logger.error_log(
+                        f"couldn't find AI model in database with id {ai_id}"
+                    )
+                    return None
+
+                cursor.execute(
+                    "UPDATE ais SET use_count = ? WHERE id = ?",
+                    (ai.use_count + 1, ai.id),
+                )
                 db.commit()
         except Exception as e:
             Logger.error_log(f"error in updating translation: {e}")
