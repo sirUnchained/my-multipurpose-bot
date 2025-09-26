@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from configs import LOGS_PATH, LOGS_MAX_LINE, DEBUG
+from .configs import LOGS_PATH, LOGS_MAX_LINE, DEBUG
 
 
 class Logger:

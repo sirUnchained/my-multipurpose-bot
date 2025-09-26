@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional, Any, Dict
 import sqlite3
-from logger import Logger
+from .logger import Logger
 
 _tables = [
     """
@@ -21,10 +21,11 @@ _tables = [
     """,
     """
             CREATE TABLE IF NOT EXISTS actions (
-                    id              INTEGER                                                     PRIMARY KEY AUTOINCREMENT,
-                    voice_lang      TEXT CHECK( voice_lang IN ('fa', 'en', 'de', 'tr', 'ru') )  NOT NULL DEFAULT 'en',
-                    translations_id INTEGER                                                     NOT NULL,
-                    ais_id          INTEGER                                                     NOT NULL,
+                    id              INTEGER                                                                           PRIMARY KEY AUTOINCREMENT,
+                    current_action  TEXT CHECK( current_action IN ('translate', 'ais', 'pc_control', 'text_voice') )  NOT NULL DEFAULT 'translate',
+                    voice_lang      TEXT CHECK( voice_lang IN ('fa', 'en', 'de', 'tr', 'ru') )                        NOT NULL DEFAULT 'en',
+                    translations_id INTEGER                                                                           NOT NULL,
+                    ais_id          INTEGER                                                                           NOT NULL,
                     FOREIGN KEY (translations_id) REFERENCES translations (id) ON DELETE CASCADE
                     FOREIGN KEY (ais_id) REFERENCES ais (id) ON DELETE CASCADE
             );
@@ -62,7 +63,9 @@ class DatabaseManager:
     def get_connection(cls) -> sqlite3.Connection:
         if cls._conn is None:
             Logger.warning_log("database _conn is null, so we try to init dataase.")
-            cls._conn = sqlite3.connect("./src/db_file/main.db")
+            cls._conn = sqlite3.connect(
+                "./src/db_file/main.db", check_same_thread=False
+            )
             cls._conn.row_factory = sqlite3.Row
             cls._conn.execute("PRAGMA foreign_keys = ON")
             cls._migrate_tables()
@@ -77,6 +80,55 @@ class DatabaseManager:
             Logger.info_log("database __conn closed.")
 
 
+class Translation_db_controller:
+    def __init__(self, translation_data: Dict[str, Any]) -> None:
+        if translation_data:
+            self.source = translation_data.get("source")
+            self.target = translation_data.get("target")
+            self.engine = translation_data.get("engine")
+        else:
+            self.source = None
+            self.target = None
+            self.engine = None
+
+    @classmethod
+    def update_translation(cls, action_id: int, translations: dict[str, str]):
+        try:
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+                query = "UPDATE translations SET source = ?, target = ?, engine = ? WHERE id = ?"
+
+                cursor.execute(
+                    query,
+                    (
+                        translations.get("source"),
+                        translations.get("target"),
+                        translations.get("engine"),
+                        action_id,
+                    ),
+                )
+
+                db.commit()
+        except Exception as e:
+            Logger.error_log(f"error in updating translations: {e}")
+            return None
+
+    @classmethod
+    def find_single_translation(cls, id: int):
+        try:
+            with DatabaseManager.get_connection() as db:
+                cursor = db.cursor()
+
+                cursor.execute("SELECT * FROM translations WHERE id = ?", (id,))
+                translation = cursor.fetchone()
+
+                if translation:
+                    return cls(dict(translation))
+        except Exception as e:
+            Logger.error_log(f"error in finding translations: {e}")
+            return None
+
+
 class Actions_db_controller:
     def __init__(self, action_data: Dict[str, Any]) -> None:
         if action_data:
@@ -84,11 +136,15 @@ class Actions_db_controller:
             self.chatbot = action_data.get("chatbot")
             self.voice_lang = action_data.get("voice_lang")
             self.translations_id = action_data.get("translations_id")
+            self.ais_id = action_data.get("ais_id")
+            self.current_action = action_data.get("current_action")
         else:
             self.id = None
             self.chatbot = None
             self.voice_lang = None
             self.translations_id = None
+            self.ais_id = None
+            self.current_action = None
 
     @classmethod
     def create_action(cls):
@@ -100,9 +156,13 @@ class Actions_db_controller:
                 translations_id = cursor.lastrowid
                 db.commit()
 
+                cursor.execute("INSERT INTO ais (model) VALUES (?)", ("gpt-4",))
+                ais_id = cursor.lastrowid
+                db.commit()
+
                 cursor.execute(
-                    "INSERT INTO actions (translations_id) VALUES (?)",
-                    (translations_id,),
+                    "INSERT INTO actions (translations_id, ais_id) VALUES (?, ?)",
+                    (translations_id, ais_id),
                 )
                 db.commit()
 
@@ -137,40 +197,18 @@ class Actions_db_controller:
     def update_action(cls, action_id: int, key: str, value: Any):
         try:
             if key == "translations":
-                cls._update_translation(action_id, value)
+                Translation_db_controller.update_translation(action_id, value)
                 return
 
             with DatabaseManager.get_connection() as db:
                 cursor = db.cursor()
-                query = f"UPDATE translations SET {key} = ? WHERE id = ?"
+                query = f"UPDATE actions SET {key} = ? WHERE id = ?"
 
                 cursor.execute(query, (value, action_id))
 
                 db.commit()
         except Exception as e:
             Logger.error_log(f"error in updating action: {e}")
-            return None
-
-    @classmethod
-    def _update_translation(cls, action_id: int, translations: dict[str, str]):
-        try:
-            with DatabaseManager.get_connection() as db:
-                cursor = db.cursor()
-                query = "UPDATE translations SET source = ?, target = ?, engine = ? WHERE id = ?"
-
-                cursor.execute(
-                    query,
-                    (
-                        translations.get("source"),
-                        translations.get("target"),
-                        translations.get("engine"),
-                        action_id,
-                    ),
-                )
-
-                db.commit()
-        except Exception as e:
-            Logger.error_log(f"error in updating translation: {e}")
             return None
 
     @classmethod
@@ -267,7 +305,7 @@ class Users_db_controller:
             return None
 
     @classmethod
-    def create_user(cls, chatid: str, username: str) -> Optional["Users_db_controller"]:
+    def create_user(cls, chatid: str, username) -> Optional["Users_db_controller"]:
         """say hello to new user"""
         try:
             with DatabaseManager.get_connection() as db:
@@ -281,7 +319,7 @@ class Users_db_controller:
 
                 if actions_id == -1:
                     Logger.error_log(f"error, action not exists for user {username}")
-                    return
+                    return None
 
                 cursor.execute(
                     """
