@@ -52,3 +52,16 @@ change_engine = types.InlineKeyboardButton(
 )
 select_translation_option = types.InlineKeyboardMarkup(row_width=2)
 select_translation_option.add(change_source, change_target, change_engine)
+
+# chose your voice language
+voice_lang_en = types.InlineKeyboardButton(text="en", callback_data="voice_en")
+voice_lang_de = types.InlineKeyboardButton(text="de", callback_data="voice_de")
+voice_lang_tr = types.InlineKeyboardButton(text="tr", callback_data="voice_tr")
+voice_lang_ru = types.InlineKeyboardButton(text="ru", callback_data="voice_ru")
+voice_lang_menu = types.InlineKeyboardMarkup(row_width=2)
+voice_lang_menu.add(
+    voice_lang_en,
+    voice_lang_de,
+    voice_lang_tr,
+    voice_lang_ru,
+)

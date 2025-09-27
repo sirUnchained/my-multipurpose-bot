@@ -14,6 +14,7 @@ def get_env_var(name, default=None, cast_func=None):
 PROXY = str(get_env_var("PROXY"))
 BOT_TOKEN = str(get_env_var("BOT_TOKEN"))
 API_TOKEN = str(get_env_var("API_TOKEN"))
+API_URL = str(get_env_var("API_URL"))
 DEBUG = get_env_var(
     "DEBUG", default=True, cast_func=lambda v: v.lower() in ("1", "true", "yes")
 )

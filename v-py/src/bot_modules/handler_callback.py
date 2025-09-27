@@ -10,7 +10,27 @@ from .keyboards import (
     source_translation_menu,
     target_translation_menu,
     engine_translation_menu,
+    voice_lang_menu,
 )
+
+
+def callback_change_voice_lang(bot: TeleBot):
+    @bot.callback_query_handler(func=lambda call: call.data.find("voice") == 0)
+    def callback_update_voice(call: types.CallbackQuery):
+        callback_id = call.id
+        chatid = str(call.message.chat.id)
+        user = Users_db_controller.find_single_user(chatid)
+        action = Actions_db_controller.find_single_action(user.actions_id)  # type: ignore
+
+        target_lang = call.data.split("_")[1]  # type: ignore
+        Actions_db_controller.update_action(
+            action.id, "voice_lang", target_lang  # type: ignore
+        )
+
+        bot.answer_callback_query(
+            callback_id,
+            text=f"زبان ویس به {target_lang} تغییر یافت",
+        )
 
 
 def callback_translation_setting(bot: TeleBot):
@@ -137,6 +157,10 @@ def callback_start_handler(bot: TeleBot):
     def handle_main_menu_callback(call: types.CallbackQuery):
         chatid = str(call.message.chat.id)
         user = Users_db_controller.find_single_user(chatid)
+        action = Actions_db_controller.find_single_action(user.actions_id)  # type: ignore
+        translation = Translation_db_controller.find_single_translation(
+            action.translations_id  # type: ignore
+        )
 
         if call.data == "openai":
             Actions_db_controller.update_action(user.actions_id, "current_action", "ais")  # type: ignore
@@ -147,7 +171,7 @@ def callback_start_handler(bot: TeleBot):
             )
             bot.send_message(
                 chatid,
-                "فهمیدم از الان به بعد پیام هاتو ترجمه میکنم٬ میتونی تنظیمات رو از منو زیر تغییر بدی.",
+                f"فهمیدم از الان به بعد پیام هاتو ترجمه میکنم٬ زبان مقصد تو {translation.source} و زبان مبدا تو {translation.target} است با موتور ترجمه {translation.engine}. میتونی تنظیمات رو از منو زیر تغییر بدی.",  # type: ignore
                 reply_markup=select_translation_option,
             )
 
@@ -166,4 +190,8 @@ def callback_start_handler(bot: TeleBot):
             Actions_db_controller.update_action(
                 user.actions_id, "current_action", "text_voice"  # type: ignore
             )
-            bot.send_message(chatid, "خب الان هر متنی بدی بهت ویس میدم.")
+            bot.send_message(
+                chatid,
+                f"خب الان هر متنی بدی بهت ویس میدم٬ متنی که تو میفرستی باید به زبان {action.voice_lang} باشه. برای تغیر زبان از منو گزینه مورد نظر رو انتخاب کن.",  # type: ignore
+                reply_markup=voice_lang_menu,
+            )

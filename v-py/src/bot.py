@@ -12,5 +12,6 @@ handler_msg.text_handler(bot)
 handler_callback.callback_translation_setting(bot)
 
 handler_callback.callback_change_translation_setting(bot)
+handler_callback.callback_change_voice_lang(bot)
 
 bot.infinity_polling()
