@@ -1,9 +1,0 @@
-[2025-09-26 22:00:46] [WARNING] database _conn is null, so we try to init dataase.
-[2025-09-26 22:00:46] [DEBUG] migrate started.
-[2025-09-26 22:00:46] [DEBUG] migrate finished.
-[2025-09-26 22:00:46] [INFO] one call for getting database _conn.
-[2025-09-26 22:00:46] [ERROR] user not found: 'NoneType' object is not iterable
-[2025-09-26 22:00:46] [INFO] one call for getting database _conn.
-[2025-09-26 22:00:46] [INFO] one call for getting database _conn.
-[2025-09-26 22:00:50] [INFO] one call for getting database _conn.
-[2025-09-26 22:00:50] [INFO] one call for getting database _conn.

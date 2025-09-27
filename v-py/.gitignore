@@ -1,5 +1,5 @@
 __pycache__
 main.db
 .env
-log.log
+*.log
 .gitignore

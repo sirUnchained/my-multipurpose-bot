@@ -18,8 +18,8 @@ source_lang_en = types.InlineKeyboardButton(text="en", callback_data="source_en"
 source_lang_de = types.InlineKeyboardButton(text="de", callback_data="source_de")
 source_lang_tr = types.InlineKeyboardButton(text="tr", callback_data="source_tr")
 source_lang_ru = types.InlineKeyboardButton(text="ru", callback_data="source_ru")
-translation_menu = types.InlineKeyboardMarkup(row_width=2)
-translation_menu.add(
+source_translation_menu = types.InlineKeyboardMarkup(row_width=2)
+source_translation_menu.add(
     source_lang_fa, source_lang_en, source_lang_de, source_lang_tr, source_lang_ru
 )
 # chose target translation buttons
@@ -28,15 +28,27 @@ target_lang_en = types.InlineKeyboardButton(text="en", callback_data="target_en"
 target_lang_de = types.InlineKeyboardButton(text="de", callback_data="target_de")
 target_lang_tr = types.InlineKeyboardButton(text="tr", callback_data="target_tr")
 target_lang_ru = types.InlineKeyboardButton(text="ru", callback_data="target_ru")
-translation_menu = types.InlineKeyboardMarkup(row_width=2)
-translation_menu.add(
+target_translation_menu = types.InlineKeyboardMarkup(row_width=2)
+target_translation_menu.add(
     target_lang_fa, target_lang_en, target_lang_de, target_lang_tr, target_lang_ru
 )
-# change translation engine
+# chose translation engine
 google = types.InlineKeyboardButton(text="google", callback_data="engine_google")
 microsoft = types.InlineKeyboardButton(
     text="microsoft", callback_data="engine_microsoft"
 )
 yandex = types.InlineKeyboardButton(text="yandex", callback_data="engine_yandex")
-translation_engine = types.InlineKeyboardMarkup(row_width=2)
-translation_engine.add(google, microsoft, yandex)
+engine_translation_menu = types.InlineKeyboardMarkup(row_width=2)
+engine_translation_menu.add(google, microsoft, yandex)
+# chose translation action
+change_source = types.InlineKeyboardButton(
+    text="تغییر زبان مقصد", callback_data="change_lang_source"
+)
+change_target = types.InlineKeyboardButton(
+    text="تغییر زبان مبدا", callback_data="change_lang_target"
+)
+change_engine = types.InlineKeyboardButton(
+    text="تغییر موتور ترجمه", callback_data="change_lang_engine"
+)
+select_translation_option = types.InlineKeyboardMarkup(row_width=2)
+select_translation_option.add(change_source, change_target, change_engine)
